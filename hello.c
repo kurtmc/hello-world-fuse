@@ -16,6 +16,12 @@
 #include <errno.h>
 #include <fcntl.h>
 
+static const char *file_names[3] = { "/file_1", "/file_2", "/file_3" };
+static const mode_t modes[3] = { S_IFREG | 0444, S_IFREG | 0444, S_IFREG | 0444};
+static const int hard_links[3] = { 1, 1, 1 };
+static const char *file_contents[3] = { "contents of file_1", "contents of file_2", "contents of file_3" };
+static const int num_files = 3;
+
 static const char *hello_str = "Hello World!\n";
 static const char *hello_path = "/hello";
 static const char *my_path = "/my-new-file";
@@ -29,18 +35,18 @@ static int hello_getattr(const char *path, struct stat *stbuf)
 	if (strcmp(path, "/") == 0) {
 		stbuf->st_mode = S_IFDIR | 0755;
 		stbuf->st_nlink = 2;
-	} else if (strcmp(path, hello_path) == 0) {
-		stbuf->st_mode = S_IFREG | 0444;
-		stbuf->st_nlink = 1;
-		stbuf->st_size = strlen(hello_str);
-	} else if (strcmp(path, my_path) == 0) {
-		stbuf->st_mode = S_IFREG | 0444;
-		stbuf->st_nlink = 1;
-		stbuf->st_size = strlen(my_str);
 	} else {
-		res = -ENOENT;
+		/* check if in list */
+		for (int i = 0; i < num_files; i++) {
+			if (strcmp(path, file_names[i]) == 0) {
+				stbuf->st_mode = modes[i];
+				stbuf->st_nlink = hard_links[i];
+				stbuf->st_size = strlen(file_contents[i]);
+				return res;
+			}
+		}
 	}
-
+	res = -ENOENT;
 	return res;
 }
 
@@ -55,18 +61,19 @@ static int hello_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
 
 	filler(buf, ".", NULL, 0);
 	filler(buf, "..", NULL, 0);
-	filler(buf, hello_path + 1, NULL, 0);
-	filler(buf, my_path + 1, NULL, 0);
+	for (int i = 0; i < num_files; i++) {
+		filler(buf, file_names[i] + 1, NULL, 0);
+	}
 
 	return 0;
 }
 
 static int hello_open(const char *path, struct fuse_file_info *fi)
 {
-	if (strcmp(path, hello_path) == 0)
-	       return 0;
-	if (strcmp(path, my_path) == 0)
-		return 0;
+	for (int i = 0; i < num_files; i++) {
+		if (strcmp(path, file_names[i]) == 0)
+			return 0;
+	}
 
 	if ((fi->flags & 3) != O_RDONLY)
 		return -EACCES;
@@ -80,29 +87,20 @@ static int hello_read(const char *path, char *buf, size_t size, off_t offset,
 	size_t len;
 	(void) fi;
 
-	if(strcmp(path, hello_path) == 0) {
-		len = strlen(hello_str);
-		if (offset < len) {
-			if (offset + size > len)
-				size = len - offset;
-			memcpy(buf, hello_str + offset, size);
-		} else
-			size = 0;
+	for (int i = 0; i < num_files; i++) {
+		if(strcmp(path, file_names[i]) == 0) {
+			len = strlen(hello_str);
+			if (offset < len) {
+				if (offset + size > len)
+					size = len - offset;
+				memcpy(buf, hello_str + offset, size);
+			} else
+				size = 0;
 
-		return size;
-	} else if (strcmp(path, my_path) == 0) {
-		len = strlen(my_str);
-		if (offset < len) {
-			if (offset + size > len)
-				size = len - offset;
-			memcpy(buf, my_str + offset, size);
-		} else
-			size = 0;
-
-		return size;
-	} else {
-		return -ENOENT;
+			return size;
+		}
 	}
+	return -ENOENT;
 
 }
 
