@@ -35,6 +35,7 @@ static int hello_getattr(const char *path, struct stat *stbuf)
 	if (strcmp(path, "/") == 0) {
 		stbuf->st_mode = S_IFDIR | 0755;
 		stbuf->st_nlink = 2;
+		return res;
 	} else {
 		/* check if in list */
 		for (int i = 0; i < num_files; i++) {
