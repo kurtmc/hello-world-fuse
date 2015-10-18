@@ -19,7 +19,7 @@
 static const char *file_names[3] = { "/file_1", "/file_2", "/file_3" };
 static const mode_t modes[3] = { S_IFREG | 0444, S_IFREG | 0444, S_IFREG | 0444};
 static const int hard_links[3] = { 1, 1, 1 };
-static const char *file_contents[3] = { "contents of file_1", "contents of file_2", "contents of file_3" };
+static const char *file_contents[3] = { "contents of file_1\n", "contents of file_2\n", "contents of file_3\n" };
 static const int num_files = 3;
 
 static const char *hello_str = "Hello World!\n";
@@ -89,11 +89,11 @@ static int hello_read(const char *path, char *buf, size_t size, off_t offset,
 
 	for (int i = 0; i < num_files; i++) {
 		if(strcmp(path, file_names[i]) == 0) {
-			len = strlen(hello_str);
+			len = strlen(file_contents[i]);
 			if (offset < len) {
 				if (offset + size > len)
 					size = len - offset;
-				memcpy(buf, hello_str + offset, size);
+				memcpy(buf, file_contents[i] + offset, size);
 			} else
 				size = 0;
 
