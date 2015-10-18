@@ -22,11 +22,6 @@ static const int hard_links[3] = { 1, 1, 1 };
 static const char *file_contents[3] = { "contents of file_1\n", "contents of file_2\n", "contents of file_3\n" };
 static const int num_files = 3;
 
-static const char *hello_str = "Hello World!\n";
-static const char *hello_path = "/hello";
-static const char *my_path = "/my-new-file";
-static const char *my_str = "Fuck yeah, a new file!\n";
-
 static int hello_getattr(const char *path, struct stat *stbuf)
 {
 	int res = 0;
