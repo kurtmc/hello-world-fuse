@@ -29,7 +29,7 @@ void setup_files()
 	num_files = 3;
 	char *stack_filenames[] = { "/file_1", "/file_2", "/file_3" };
 	char *stack_file_contents[] = { "contents of file_1\n", "contents of file_2\n", "contents of file_3\n" };
-	mode_t stack_modes[] = { S_IFREG | 0444, S_IFREG | 0444, S_IFREG | 0444};
+	mode_t stack_modes[] = { S_IFREG | 0666, S_IFREG | 0444, S_IFREG | 0444};
 	int stack_hard_links[] = {1, 1, 1};
 
 	// Setup modes
@@ -132,11 +132,60 @@ static int hello_read(const char *path, char *buf, size_t size, off_t offset,
 
 }
 
+static int hello_write(const char *path, const char *buf, size_t size, off_t offset,
+		struct fuse_file_info *fi)
+{
+	size_t len;
+	(void) fi;
+
+	for (int i = 0; i < num_files; i++) {
+		if(strcmp(path, file_names[i]) == 0) {
+			len = strlen(file_contents[i]);
+			if (offset < len) {
+				if (offset + size > len)
+					size = len - offset;
+				memcpy(file_contents[i] + offset, buf, size);
+			} else
+				size = 0;
+
+			return size;
+		}
+	}
+	return -ENOENT;
+}
+
+/* Empty implementations for utime, chown, chmod and truncate so that I can have
+ * a basic implementation of the write function. Without these methods you get a
+ * FUSE error SETATTR function not implemented. */
+static int hello_utime(const char *path, struct utimbuf *t)
+{
+	return 0;
+}
+
+static int hello_chown(const char *path, uid_t uid, gid_t gid)
+{
+	return 0;
+}
+static int hello_chmod(const char *path, mode_t mode)
+{
+	return 0;
+}
+
+static int hello_truncate(const char *path, off_t size)
+{
+	return 0;
+}
+
 static struct fuse_operations hello_oper = {
 	.getattr	= hello_getattr,
 	.readdir	= hello_readdir,
 	.open		= hello_open,
 	.read		= hello_read,
+	.write		= hello_write,
+	.utime		= hello_utime,
+	.chmod		= hello_chmod,
+	.chown		= hello_chown,
+	.truncate	= hello_truncate,
 };
 
 int main(int argc, char *argv[])
