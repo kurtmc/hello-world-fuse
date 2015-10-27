@@ -45,14 +45,12 @@ void setup_files()
 	// Setup file names
 	file_names = malloc(num_files * sizeof(char *));
 	for (int i = 0; i < num_files; i++) {
-		file_names[i] = malloc((strlen(stack_filenames[i]) + 1) * sizeof(char));
-		strcpy(file_names[i], stack_filenames[i]);
+		file_names[i] = strdup(stack_filenames[i]);
 	}
 	// Setup file contents
 	file_contents = malloc(num_files * sizeof(char *));
 	for (int i = 0; i < num_files; i++) {
-		file_contents[i] = malloc((strlen(stack_file_contents[i]) + 1) * sizeof(char));
-		strcpy(file_contents[i], stack_file_contents[i]);
+		file_contents[i] = strdup(stack_file_contents[i]);
 	}
 }
 
