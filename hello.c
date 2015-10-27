@@ -15,12 +15,46 @@
 #include <string.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <stdlib.h>
 
-static const char *file_names[3] = { "/file_1", "/file_2", "/file_3" };
-static const mode_t modes[3] = { S_IFREG | 0444, S_IFREG | 0444, S_IFREG | 0444};
-static const int hard_links[3] = { 1, 1, 1 };
-static const char *file_contents[3] = { "contents of file_1\n", "contents of file_2\n", "contents of file_3\n" };
-static const int num_files = 3;
+static char **file_names;
+static mode_t *modes;
+static int *hard_links;
+static char **file_contents;
+static int num_files;
+
+void setup_files()
+{
+	// Modify these values to create more/less/different files
+	num_files = 3;
+	char *stack_filenames[] = { "/file_1", "/file_2", "/file_3" };
+	char *stack_file_contents[] = { "contents of file_1\n", "contents of file_2\n", "contents of file_3\n" };
+	mode_t stack_modes[] = { S_IFREG | 0444, S_IFREG | 0444, S_IFREG | 0444};
+	int stack_hard_links[] = {1, 1, 1};
+
+	// Setup modes
+	modes = malloc(num_files * sizeof(mode_t));
+	for (int i = 0; i < num_files; i++) {
+		modes[i] = stack_modes[i];
+	}
+	// Setup hard links
+	hard_links = malloc(num_files * sizeof(int));
+	for (int i = 0; i < num_files; i++) {
+		hard_links[i] = stack_hard_links[i];
+	}
+	// Setup file names
+	file_names = malloc(num_files * sizeof(char *));
+	for (int i = 0; i < num_files; i++) {
+		file_names[i] = malloc((strlen(stack_filenames[i]) + 1) * sizeof(char));
+		strcpy(file_names[i], stack_filenames[i]);
+	}
+	// Setup file contents
+	file_contents = malloc(num_files * sizeof(char *));
+	for (int i = 0; i < num_files; i++) {
+		file_contents[i] = malloc((strlen(stack_file_contents[i]) + 1) * sizeof(char));
+		strcpy(file_contents[i], stack_file_contents[i]);
+	}
+}
 
 static int hello_getattr(const char *path, struct stat *stbuf)
 {
@@ -109,5 +143,6 @@ static struct fuse_operations hello_oper = {
 
 int main(int argc, char *argv[])
 {
+	setup_files();
 	return fuse_main(argc, argv, &hello_oper, NULL);
 }
