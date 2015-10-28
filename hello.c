@@ -21,6 +21,7 @@ static char **file_names;
 static mode_t *modes;
 static int *hard_links;
 static char **file_contents;
+static unsigned int *file_length;
 static int num_files;
 
 void setup_files()
@@ -49,8 +50,10 @@ void setup_files()
 	}
 	// Setup file contents
 	file_contents = malloc(num_files * sizeof(char *));
+	file_length = malloc(num_files * sizeof(unsigned int));
 	for (int i = 0; i < num_files; i++) {
 		file_contents[i] = strdup(stack_file_contents[i]);
+		file_length[i] = strlen(stack_file_contents[i]) + 1;
 	}
 }
 
@@ -117,7 +120,7 @@ static int hello_read(const char *path, char *buf, size_t size, off_t offset,
 
 	for (int i = 0; i < num_files; i++) {
 		if(strcmp(path, file_names[i]) == 0) {
-			len = strlen(file_contents[i]);
+			len = file_length[i];
 			if (offset < len) {
 				if (offset + size > len)
 					size = len - offset;
@@ -140,7 +143,13 @@ static int hello_write(const char *path, const char *buf, size_t size, off_t off
 
 	for (int i = 0; i < num_files; i++) {
 		if(strcmp(path, file_names[i]) == 0) {
-			len = strlen(file_contents[i]);
+			// Just realloc it so that there is enough memory.
+			if ((size + offset) > file_length[i]) {
+				file_contents[i] = realloc(file_contents[i], size + offset);
+				file_length[i] = size + offset;
+			}
+
+			len = file_length[i];
 			if (offset < len) {
 				if (offset + size > len)
 					size = len - offset;
