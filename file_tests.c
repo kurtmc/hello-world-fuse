@@ -7,23 +7,25 @@
 
 int tests_run = 0;
 
-static char *test_overwrite() {
-	const char *filename = "testdir/file_1";
-	/* Write to file */
+void overwrite_file(const char *filename, const char *contents)
+{
 	FILE *f = fopen(filename, "w");
 	if (f == NULL)
 	{
 		printf("Error opening file!\n");
 		exit(1);
 	}
-
-	fprintf(f, "X");
+	fprintf(f, "%s", contents);
 	fclose(f);
+}
 
+/* This function can return NULL */
+char *get_file_contents(const char *filename)
+{
 	/* read the file and check if it makes sense */
 	char * buffer = 0;
 	long length;
-	f = fopen (filename, "rb");
+	FILE *f = fopen (filename, "rb");
 
 	if (f)
 	{
@@ -38,9 +40,20 @@ static char *test_overwrite() {
 		fclose (f);
 	}
 
-	if (buffer)
+	/* buffer can be NULL */
+	return buffer;
+}
+
+static char *test_overwrite() {
+	const char *filename = "testdir/file_1";
+	overwrite_file(filename, "X");
+
+	/* read the file and check if it makes sense */
+	char *file_contents = get_file_contents(filename);
+
+	if (file_contents)
 	{
-		mu_assert("error, file contents is incorrect", strcmp(buffer, "X") == 0);
+		mu_assert("error, file contents is incorrect", strcmp(file_contents, "X") == 0);
 	}
 
 	return 0;
