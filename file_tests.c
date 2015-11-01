@@ -102,14 +102,26 @@ static char *test_delete_contents()
 	}
 
 	return 0;
-
-
 }
+
+static char *test_create_new_file()
+{
+	const char *filename = "testdir/random_filename";
+	overwrite_file(filename, "");
+
+	/* read the file and check if it makes sense */
+	char *file_contents = get_file_contents(filename);
+
+	mu_assert("test_create_new_file: file might not be created", file_contents != NULL);
+	mu_assert("test_create_new_file: file contents is incorrect", strcmp(file_contents, "") == 0);
+	return 0;
+}	
 
 static char * all_tests() {
 	mu_run_test(test_overwrite);
 	mu_run_test(test_append);
 	mu_run_test(test_delete_contents);
+	mu_run_test(test_create_new_file);
 	return 0;
 }
 
