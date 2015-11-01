@@ -1,3 +1,4 @@
 testdir
 hello
 *.pyc
+*.swp

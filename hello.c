@@ -53,7 +53,7 @@ void setup_files()
 	file_length = malloc(num_files * sizeof(unsigned int));
 	for (int i = 0; i < num_files; i++) {
 		file_contents[i] = strdup(stack_file_contents[i]);
-		file_length[i] = strlen(stack_file_contents[i]) + 1;
+		file_length[i] = strlen(stack_file_contents[i]);
 	}
 }
 
