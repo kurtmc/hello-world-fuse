@@ -50,6 +50,17 @@ struct simple_file *create_file_struct(const char *path, mode_t mode, int hard_l
 	return f;
 }
 
+/* May return NULL */
+struct simple_file *find_file(const char *path)
+{
+	for (int i = 0; i < num_files; i++) {
+		if (strcmp(path, files[i]->path) == 0) {
+			return files[i];
+		}
+	}
+	return NULL;
+}
+
 void setup_files()
 {
 	/*
@@ -221,6 +232,17 @@ static int hello_chmod(const char *path, mode_t mode)
 
 static int hello_truncate(const char *path, off_t size)
 {
+	struct simple_file *f;
+	f = find_file(path);
+
+	if (f == NULL)
+		return -ENOENT;
+
+	f->file_length = size;
+
+	f->file_contents = realloc(f->file_contents, size);
+
+
 	return 0;
 }
 
