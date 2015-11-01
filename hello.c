@@ -16,7 +16,7 @@ struct simple_file {
 	mode_t mode;
 	int hard_links;
 	char *file_contents;
-	int file_length;
+	size_t file_length;
 };
 
 struct simple_file *create_file_struct(const char *path, mode_t mode, int hard_links, char *file_contents, int file_length) {
@@ -102,7 +102,7 @@ static int hello_read(const char *path, char *buf, size_t size, off_t offset,
 	struct simple_file *f = find_file(path);
 	if (f) {
 		len = f->file_length;
-		if (offset < len) {
+		if (offset < (off_t) len) {
 			if (offset + size > len)
 				size = len - offset;
 			memcpy(buf, f->file_contents + offset, size);
@@ -122,27 +122,28 @@ static int hello_write(const char *path, const char *buf, size_t size, off_t off
 	size_t len;
 	(void) fi;
 
-	for (int i = 0; i < num_files; i++) {
-		if(strcmp(path, files[i]->path) == 0) {
-			if ((size + offset) > files[i]->file_length) { /* larger, so realloc */
-				files[i]->file_contents = realloc(files[i]->file_contents, size + offset);
-				files[i]->file_length = size + offset;
-			} else if ((size + offset) < files[i]->file_length) { /* smaller, so realloc */
-				files[i]->file_contents = realloc(files[i]->file_contents, size + offset);
-				files[i]->file_length = size + offset;
-			}
 
-			len = files[i]->file_length;
-			if (offset < len) {
-				if (offset + size > len)
-					size = len - offset;
-				memcpy(files[i]->file_contents + offset, buf, size);
-			} else
-				size = 0;
-
-			return size;
+	struct simple_file *f = find_file(path);
+	if (f) {
+		if ((size + offset) > f->file_length) { /* larger, so realloc */
+			f->file_contents = realloc(f->file_contents, size + offset);
+			f->file_length = size + offset;
+		} else if ((size + offset) < f->file_length) { /* smaller, so realloc */
+			f->file_contents = realloc(f->file_contents, size + offset);
+			f->file_length = size + offset;
 		}
+
+		len = f->file_length;
+		if (offset < (off_t) len) {
+			if (offset + size > len)
+				size = len - offset;
+			memcpy(f->file_contents + offset, buf, size);
+		} else
+			size = 0;
+
+		return size;
 	}
+			
 	return -ENOENT;
 }
 
