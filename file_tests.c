@@ -7,9 +7,9 @@
 
 int tests_run = 0;
 
-void overwrite_file(const char *filename, const char *contents)
+void write_file(const char *filename, const char *mode, const char *contents)
 {
-	FILE *f = fopen(filename, "w");
+	FILE *f = fopen(filename, mode);
 	if (f == NULL)
 	{
 		printf("Error opening file!\n");
@@ -17,6 +17,16 @@ void overwrite_file(const char *filename, const char *contents)
 	}
 	fprintf(f, "%s", contents);
 	fclose(f);
+}
+
+void append_file(const char *filename, const char *contents)
+{
+	write_file(filename, "a", contents);
+}
+
+void overwrite_file(const char *filename, const char *contents)
+{
+	write_file(filename, "w", contents);
 }
 
 /* This function can return NULL */
@@ -53,7 +63,23 @@ static char *test_overwrite() {
 
 	if (file_contents)
 	{
-		mu_assert("error, file contents is incorrect", strcmp(file_contents, "X") == 0);
+		mu_assert("test_overwrite: file contents is incorrect", strcmp(file_contents, "X") == 0);
+	}
+
+	return 0;
+}
+
+static char *test_append() {
+	const char *filename = "testdir/file_2";
+	overwrite_file(filename, "X");
+	append_file(filename, "X");
+
+	/* read the file and check if it makes sense */
+	char *file_contents = get_file_contents(filename);
+
+	if (file_contents)
+	{
+		mu_assert("test_append: file contents is incorrect", strcmp(file_contents, "XX") == 0);
 	}
 
 	return 0;
@@ -61,6 +87,7 @@ static char *test_overwrite() {
 
 static char * all_tests() {
 	mu_run_test(test_overwrite);
+	mu_run_test(test_append);
 	return 0;
 }
 
