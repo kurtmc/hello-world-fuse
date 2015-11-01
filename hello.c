@@ -99,19 +99,19 @@ static int hello_read(const char *path, char *buf, size_t size, off_t offset,
 	size_t len;
 	(void) fi;
 
-	for (int i = 0; i < num_files; i++) {
-		if(strcmp(path, files[i]->path) == 0) {
-			len = files[i]->file_length;
-			if (offset < len) {
-				if (offset + size > len)
-					size = len - offset;
-				memcpy(buf, files[i]->file_contents + offset, size);
-			} else
-				size = 0;
+	struct simple_file *f = find_file(path);
+	if (f) {
+		len = f->file_length;
+		if (offset < len) {
+			if (offset + size > len)
+				size = len - offset;
+			memcpy(buf, f->file_contents + offset, size);
+		} else
+			size = 0;
 
-			return size;
-		}
+		return size;
 	}
+
 	return -ENOENT;
 
 }
