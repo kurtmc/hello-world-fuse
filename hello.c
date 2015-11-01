@@ -144,7 +144,10 @@ static int hello_write(const char *path, const char *buf, size_t size, off_t off
 	for (int i = 0; i < num_files; i++) {
 		if(strcmp(path, file_names[i]) == 0) {
 			// Just realloc it so that there is enough memory.
-			if ((size + offset) > file_length[i]) {
+			if ((size + offset) > file_length[i]) { /* larger, so realloc */
+				file_contents[i] = realloc(file_contents[i], size + offset);
+				file_length[i] = size + offset;
+			} else if ((size + offset) < file_length[i]) { /* smaller, so realloc */
 				file_contents[i] = realloc(file_contents[i], size + offset);
 				file_length[i] = size + offset;
 			}
