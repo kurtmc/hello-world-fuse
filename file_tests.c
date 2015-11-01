@@ -62,10 +62,8 @@ static char *test_overwrite() {
 	/* read the file and check if it makes sense */
 	char *file_contents = get_file_contents(filename);
 
-	if (file_contents)
-	{
-		mu_assert("test_overwrite: file contents is incorrect", strcmp(file_contents, "X") == 0);
-	}
+	mu_assert("test_overwrite: file_contents is NULL", file_contents != NULL);
+	mu_assert("test_overwrite: file contents is incorrect", strcmp(file_contents, "X") == 0);
 
 	return 0;
 }
@@ -78,10 +76,8 @@ static char *test_append() {
 	/* read the file and check if it makes sense */
 	char *file_contents = get_file_contents(filename);
 
-	if (file_contents)
-	{
-		mu_assert("test_append: file contents is incorrect", strcmp(file_contents, "XX") == 0);
-	}
+	mu_assert("test_append: file_contents is NULL", file_contents != NULL);
+	mu_assert("test_append: file contents is incorrect", strcmp(file_contents, "XX") == 0);
 
 	return 0;
 }
@@ -96,10 +92,8 @@ static char *test_delete_contents()
 	/* read the file and check if it makes sense */
 	char *file_contents = get_file_contents(filename);
 
-	if (file_contents)
-	{
-		mu_assert("test_delete_contents: file contents is incorrect", strcmp(file_contents, "") == 0);
-	}
+	mu_assert("test_delete_contents: file_contents is NULL", file_contents != NULL);
+	mu_assert("test_delete_contents: file contents is incorrect", strcmp(file_contents, "") == 0);
 
 	return 0;
 }
