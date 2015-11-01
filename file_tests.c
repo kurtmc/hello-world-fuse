@@ -29,6 +29,7 @@ void overwrite_file(const char *filename, const char *contents)
 	write_file(filename, "w", contents);
 }
 
+
 /* This function can return NULL */
 char *get_file_contents(const char *filename)
 {
@@ -85,9 +86,30 @@ static char *test_append() {
 	return 0;
 }
 
+/* test deleting file contents */
+static char *test_delete_contents()
+{
+	const char *filename = "testdir/file_3";
+	overwrite_file(filename, "Some junk.");
+	overwrite_file(filename, "");
+	
+	/* read the file and check if it makes sense */
+	char *file_contents = get_file_contents(filename);
+
+	if (file_contents)
+	{
+		mu_assert("test_delete_contents: file contents is incorrect", strcmp(file_contents, "") == 0);
+	}
+
+	return 0;
+
+
+}
+
 static char * all_tests() {
 	mu_run_test(test_overwrite);
 	mu_run_test(test_append);
+	mu_run_test(test_delete_contents);
 	return 0;
 }
 
