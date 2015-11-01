@@ -1,13 +1,3 @@
-/*
- *   FUSE: Filesystem in Userspace
- *     Copyright (C) 2001-2007  Miklos Szeredi <miklos@szeredi.hu>
- *
- *       This program can be distributed under the terms of the GNU GPL.
- *         See the file COPYING.
- *
- *           gcc -Wall hello.c `pkg-config fuse --cflags --libs` -o hello
- *           */
-
 #define FUSE_USE_VERSION 26
 
 #include <fuse.h>
@@ -17,13 +7,6 @@
 #include <fcntl.h>
 #include <stdlib.h>
 
-/*
-static char **file_names;
-static mode_t *modes;
-static int *hard_links;
-static char **file_contents;
-static unsigned int *file_length;
-*/
 
 static int num_files;
 static struct simple_file **files;
@@ -63,36 +46,6 @@ struct simple_file *find_file(const char *path)
 
 void setup_files()
 {
-	/*
-	// Modify these values to create more/less/different files
-	char *stack_filenames[] = { "/file_1", "/file_2", "/file_3" };
-	char *stack_file_contents[] = { "contents of file_1\n", "contents of file_2\n", "contents of file_3\n" };
-	mode_t stack_modes[] = { S_IFREG | 0666, S_IFREG | 0444, S_IFREG | 0444};
-	int stack_hard_links[] = {1, 1, 1};
-
-	// Setup modes
-	modes = malloc(num_files * sizeof(mode_t));
-	for (int i = 0; i < num_files; i++) {
-		modes[i] = stack_modes[i];
-	}
-	// Setup hard links
-	hard_links = malloc(num_files * sizeof(int));
-	for (int i = 0; i < num_files; i++) {
-		hard_links[i] = stack_hard_links[i];
-	}
-	// Setup file names
-	file_names = malloc(num_files * sizeof(char *));
-	for (int i = 0; i < num_files; i++) {
-		file_names[i] = strdup(stack_filenames[i]);
-	}
-	// Setup file contents
-	file_contents = malloc(num_files * sizeof(char *));
-	file_length = malloc(num_files * sizeof(unsigned int));
-	for (int i = 0; i < num_files; i++) {
-		file_contents[i] = strdup(stack_file_contents[i]);
-		file_length[i] = strlen(stack_file_contents[i]);
-	}
-	*/
 
 	// Setup simple files
 	num_files = 3;
@@ -248,23 +201,6 @@ static int hello_truncate(const char *path, off_t size)
 
 static int hello_create(const char *path, mode_t mode, struct fuse_file_info *info)
 {
-	/*
-	file_names = realloc(file_names, num_files * sizeof(char *));
-	file_names[num_files - 1] = strdup(path);
-
-	modes = realloc(modes, num_files * sizeof(mode_t));
-	modes[num_files - 1] = mode;
-
-	hard_links = realloc(hard_links, num_files * sizeof(int));
-	hard_links[num_files - 1] = 1;
-
-	file_contents = realloc(file_contents, num_files * sizeof(char *));
-	file_contents[num_files - 1] = strdup("");
-
-	file_length = realloc(file_length, num_files * sizeof(unsigned int));
-	file_length[num_files - 1] = 0;
-	*/
-
 	num_files++;
 
 	files = realloc(files, num_files * sizeof(struct simple_file *));
