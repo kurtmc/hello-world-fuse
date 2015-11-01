@@ -187,6 +187,27 @@ static int hello_truncate(const char *path, off_t size)
 	return 0;
 }
 
+static int hello_create(const char *path, mode_t mode, struct fuse_file_info *info)
+{
+	num_files++;
+	file_names = realloc(file_names, num_files * sizeof(char *));
+	file_names[num_files - 1] = strdup(path);
+
+	modes = realloc(modes, num_files * sizeof(mode_t));
+	modes[num_files - 1] = mode;
+
+	hard_links = realloc(hard_links, num_files * sizeof(int));
+	hard_links[num_files - 1] = 1;
+
+	file_contents = realloc(file_contents, num_files * sizeof(char *));
+	file_contents[num_files - 1] = strdup("");
+
+	file_length = realloc(file_length, num_files * sizeof(unsigned int));
+	file_length[num_files - 1] = 0;
+
+	return 0;
+}
+
 static struct fuse_operations hello_oper = {
 	.getattr	= hello_getattr,
 	.readdir	= hello_readdir,
@@ -197,6 +218,7 @@ static struct fuse_operations hello_oper = {
 	.chmod		= hello_chmod,
 	.chown		= hello_chown,
 	.truncate	= hello_truncate,
+	.create		= hello_create,
 };
 
 int main(int argc, char *argv[])
