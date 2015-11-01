@@ -8,7 +8,7 @@
 #include <stdlib.h>
 
 
-static int num_files;
+static int num_files = 0;
 static struct simple_file **files;
 
 struct simple_file {
@@ -42,20 +42,6 @@ struct simple_file *find_file(const char *path)
 		}
 	}
 	return NULL;
-}
-
-void setup_files()
-{
-
-	// Setup simple files
-	num_files = 3;
-	files = malloc(num_files * sizeof(struct simple_file *));
-	char *contents = "contents of file_1\n";
-	files[0] = create_file_struct("/file_1", S_IFREG | 0666, 1, contents, strlen(contents));
-	contents = "contents of file_2\n";
-	files[1] = create_file_struct("/file_2", S_IFREG | 0666, 1, contents, strlen(contents));
-	contents = "contents of file_3\n";
-	files[2] = create_file_struct("/file_3", S_IFREG | 0666, 1, contents, strlen(contents));
 }
 
 static int hello_getattr(const char *path, struct stat *stbuf)
@@ -222,6 +208,5 @@ static struct fuse_operations hello_oper = {
 
 int main(int argc, char *argv[])
 {
-	setup_files();
 	return fuse_main(argc, argv, &hello_oper, NULL);
 }
