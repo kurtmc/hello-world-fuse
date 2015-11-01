@@ -102,10 +102,8 @@ static int hello_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
 
 static int hello_open(const char *path, struct fuse_file_info *fi)
 {
-	for (int i = 0; i < num_files; i++) {
-		if (strcmp(path, files[i]->path) == 0)
-			return 0;
-	}
+	if (find_file(path))
+		return 0;
 
 	if ((fi->flags & 3) != O_RDONLY)
 		return -EACCES;
