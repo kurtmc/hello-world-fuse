@@ -53,18 +53,14 @@ static int hello_getattr(const char *path, struct stat *stbuf)
 		stbuf->st_mode = S_IFDIR | 0755;
 		stbuf->st_nlink = 2;
 		return res;
-	} else {
-		/* check if in list */
-		for (int i = 0; i < num_files; i++) {
-			if (strcmp(path, files[i]->path) == 0) {
-				stbuf->st_mode = files[i]->mode;
-				stbuf->st_nlink = files[i]->hard_links;
-				stbuf->st_size = files[i]->file_length;
-				return res;
-			}
-		}
 	}
-	res = -ENOENT;
+
+	struct simple_file *f = find_file(path);
+	if (f == NULL)
+		return -ENOENT; /* cant find file */
+	stbuf->st_mode = f->mode;
+	stbuf->st_nlink = f->hard_links;
+	stbuf->st_size = f->file_length;
 	return res;
 }
 
