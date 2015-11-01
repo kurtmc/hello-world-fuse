@@ -72,7 +72,7 @@ static int hello_getattr(const char *path, struct stat *stbuf)
 			if (strcmp(path, file_names[i]) == 0) {
 				stbuf->st_mode = modes[i];
 				stbuf->st_nlink = hard_links[i];
-				stbuf->st_size = strlen(file_contents[i]);
+				stbuf->st_size = file_length[i];
 				return res;
 			}
 		}
