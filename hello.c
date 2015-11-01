@@ -17,17 +17,43 @@
 #include <fcntl.h>
 #include <stdlib.h>
 
+/*
 static char **file_names;
 static mode_t *modes;
 static int *hard_links;
 static char **file_contents;
 static unsigned int *file_length;
+*/
+
 static int num_files;
+static struct simple_file **files;
+
+struct simple_file {
+	char *path;
+	mode_t mode;
+	int hard_links;
+	char *file_contents;
+	int file_length;
+};
+
+struct simple_file *create_file_struct(const char *path, mode_t mode, int hard_links, char *file_contents, int file_length) {
+	struct simple_file *f;
+
+	f = malloc(sizeof(struct simple_file));
+	f->path = strdup(path);
+	f->mode = mode;
+	f->hard_links = hard_links;
+	f->file_contents = malloc(file_length * sizeof(char));
+	strncpy(f->file_contents, file_contents, file_length);
+	f->file_length = file_length;
+
+	return f;
+}
 
 void setup_files()
 {
+	/*
 	// Modify these values to create more/less/different files
-	num_files = 3;
 	char *stack_filenames[] = { "/file_1", "/file_2", "/file_3" };
 	char *stack_file_contents[] = { "contents of file_1\n", "contents of file_2\n", "contents of file_3\n" };
 	mode_t stack_modes[] = { S_IFREG | 0666, S_IFREG | 0444, S_IFREG | 0444};
@@ -55,6 +81,17 @@ void setup_files()
 		file_contents[i] = strdup(stack_file_contents[i]);
 		file_length[i] = strlen(stack_file_contents[i]);
 	}
+	*/
+
+	// Setup simple files
+	num_files = 3;
+	files = malloc(num_files * sizeof(struct simple_file *));
+	char *contents = "contents of file_1\n";
+	files[0] = create_file_struct("/file_1", S_IFREG | 0666, 1, contents, strlen(contents));
+	contents = "contents of file_2\n";
+	files[1] = create_file_struct("/file_2", S_IFREG | 0666, 1, contents, strlen(contents));
+	contents = "contents of file_3\n";
+	files[2] = create_file_struct("/file_3", S_IFREG | 0666, 1, contents, strlen(contents));
 }
 
 static int hello_getattr(const char *path, struct stat *stbuf)
@@ -69,10 +106,10 @@ static int hello_getattr(const char *path, struct stat *stbuf)
 	} else {
 		/* check if in list */
 		for (int i = 0; i < num_files; i++) {
-			if (strcmp(path, file_names[i]) == 0) {
-				stbuf->st_mode = modes[i];
-				stbuf->st_nlink = hard_links[i];
-				stbuf->st_size = file_length[i];
+			if (strcmp(path, files[i]->path) == 0) {
+				stbuf->st_mode = files[i]->mode;
+				stbuf->st_nlink = files[i]->hard_links;
+				stbuf->st_size = files[i]->file_length;
 				return res;
 			}
 		}
@@ -93,7 +130,7 @@ static int hello_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
 	filler(buf, ".", NULL, 0);
 	filler(buf, "..", NULL, 0);
 	for (int i = 0; i < num_files; i++) {
-		filler(buf, file_names[i] + 1, NULL, 0);
+		filler(buf, files[i]->path + 1, NULL, 0);
 	}
 
 	return 0;
@@ -102,7 +139,7 @@ static int hello_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
 static int hello_open(const char *path, struct fuse_file_info *fi)
 {
 	for (int i = 0; i < num_files; i++) {
-		if (strcmp(path, file_names[i]) == 0)
+		if (strcmp(path, files[i]->path) == 0)
 			return 0;
 	}
 
@@ -119,12 +156,12 @@ static int hello_read(const char *path, char *buf, size_t size, off_t offset,
 	(void) fi;
 
 	for (int i = 0; i < num_files; i++) {
-		if(strcmp(path, file_names[i]) == 0) {
-			len = file_length[i];
+		if(strcmp(path, files[i]->path) == 0) {
+			len = files[i]->file_length;
 			if (offset < len) {
 				if (offset + size > len)
 					size = len - offset;
-				memcpy(buf, file_contents[i] + offset, size);
+				memcpy(buf, files[i]->file_contents + offset, size);
 			} else
 				size = 0;
 
@@ -142,20 +179,20 @@ static int hello_write(const char *path, const char *buf, size_t size, off_t off
 	(void) fi;
 
 	for (int i = 0; i < num_files; i++) {
-		if(strcmp(path, file_names[i]) == 0) {
-			if ((size + offset) > file_length[i]) { /* larger, so realloc */
-				file_contents[i] = realloc(file_contents[i], size + offset);
-				file_length[i] = size + offset;
-			} else if ((size + offset) < file_length[i]) { /* smaller, so realloc */
-				file_contents[i] = realloc(file_contents[i], size + offset);
-				file_length[i] = size + offset;
+		if(strcmp(path, files[i]->path) == 0) {
+			if ((size + offset) > files[i]->file_length) { /* larger, so realloc */
+				files[i]->file_contents = realloc(files[i]->file_contents, size + offset);
+				files[i]->file_length = size + offset;
+			} else if ((size + offset) < files[i]->file_length) { /* smaller, so realloc */
+				files[i]->file_contents = realloc(files[i]->file_contents, size + offset);
+				files[i]->file_length = size + offset;
 			}
 
-			len = file_length[i];
+			len = files[i]->file_length;
 			if (offset < len) {
 				if (offset + size > len)
 					size = len - offset;
-				memcpy(file_contents[i] + offset, buf, size);
+				memcpy(files[i]->file_contents + offset, buf, size);
 			} else
 				size = 0;
 
@@ -189,7 +226,7 @@ static int hello_truncate(const char *path, off_t size)
 
 static int hello_create(const char *path, mode_t mode, struct fuse_file_info *info)
 {
-	num_files++;
+	/*
 	file_names = realloc(file_names, num_files * sizeof(char *));
 	file_names[num_files - 1] = strdup(path);
 
@@ -204,6 +241,12 @@ static int hello_create(const char *path, mode_t mode, struct fuse_file_info *in
 
 	file_length = realloc(file_length, num_files * sizeof(unsigned int));
 	file_length[num_files - 1] = 0;
+	*/
+
+	num_files++;
+
+	files = realloc(files, num_files * sizeof(struct simple_file *));
+	files[num_files - 1] = create_file_struct(path, mode, 1, "", 0);
 
 	return 0;
 }
