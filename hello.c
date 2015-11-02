@@ -215,17 +215,17 @@ static int hello_create(const char *path, mode_t mode, struct fuse_file_info
 }
 
 static struct fuse_operations hello_oper = {
-	.getattr	= hello_getattr,
-	.readdir	= hello_readdir,
-	.open		= hello_open,
-	.read		= hello_read,
-	.write		= hello_write,
-	.utime		= hello_utime,
-	.chmod		= hello_chmod,
-	.chown		= hello_chown,
-	.truncate	= hello_truncate,
-	.create		= hello_create,
-	.unlink		= hello_unlink,
+	.getattr  = hello_getattr,
+	.readdir  = hello_readdir,
+	.open     = hello_open,
+	.read     = hello_read,
+	.write    = hello_write,
+	.utime    = hello_utime,
+	.chmod    = hello_chmod,
+	.chown    = hello_chown,
+	.truncate = hello_truncate,
+	.create   = hello_create,
+	.unlink   = hello_unlink,
 };
 
 int main(int argc, char *argv[])
