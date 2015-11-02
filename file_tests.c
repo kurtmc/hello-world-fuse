@@ -4,6 +4,8 @@
 #include "minunit.h"
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 int tests_run;
 
@@ -130,6 +132,25 @@ static char *test_delete_file()
 	return 0;
 }
 
+static char *test_mkdir()
+{
+	int result = mkdir("testdir/my_dir", S_IFDIR | 0755);
+	mu_assert("test_mkdir: directory not created", result == 0);
+
+	return 0;
+}
+
+static char *test_remove_directory()
+{
+	const char *filename = "testdir/my_new_dir";
+	int result = mkdir(filename, S_IFDIR | 0755);
+	mu_assert("test_remove_directory: dir not created", result == 0);
+	result = rmdir(filename);
+	mu_assert("test_remove_directory: dir not deleted", result == 0);
+
+	return 0;
+}
+
 static char *all_tests()
 {
 	mu_run_test(test_overwrite);
@@ -137,6 +158,8 @@ static char *all_tests()
 	mu_run_test(test_delete_contents);
 	mu_run_test(test_create_new_file);
 	mu_run_test(test_delete_file);
+	mu_run_test(test_mkdir);
+	mu_run_test(test_remove_directory);
 	return 0;
 }
 
