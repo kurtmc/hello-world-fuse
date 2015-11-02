@@ -33,6 +33,12 @@ struct simple_file *create_file_struct(const char *path, mode_t mode, int hard_l
 	return f;
 }
 
+void free_file(struct simple_file *f) {
+	free(f->path);
+	free(f->file_contents);
+	free(f);
+}
+
 /* May return NULL */
 struct simple_file *find_file(const char *path)
 {
@@ -42,6 +48,48 @@ struct simple_file *find_file(const char *path)
 		}
 	}
 	return NULL;
+}
+
+void add_file(struct simple_file *file)
+{
+	num_files++;
+
+	files = realloc(files, num_files * sizeof(struct simple_file *));
+	files[num_files - 1] = file;
+
+}
+
+int remove_file(const char *path)
+{
+	/* Get index for file */
+	int index = -1;
+	for (int i = 0; i < num_files; i++) {
+		if (strcmp(path, files[i]->path) == 0) {
+			index = i;
+		}
+	}
+
+	/* file not found */
+	if (index == -1)
+		return -ENOENT;
+
+	/* free the memory */
+	struct simple_file *to_delete = files[index];
+	free_file(to_delete);
+
+	/* shift over all the files in the array */
+	if (index == num_files - 1) {
+	} else if (index >= 0) {
+		for (int i = index; i < num_files - 1; i++) {
+			files[i] = files[i + 1];
+		}
+	}
+
+	/* reallocate memory */
+	num_files--;
+	files = realloc(files, num_files * sizeof(struct simple_file *));
+
+	return 0;
 }
 
 static int hello_getattr(const char *path, struct stat *stbuf)
@@ -180,13 +228,14 @@ static int hello_truncate(const char *path, off_t size)
 	return 0;
 }
 
+static int hello_unlink(const char* path)
+{
+	return remove_file(path);
+}
+
 static int hello_create(const char *path, mode_t mode, struct fuse_file_info *info)
 {
-	num_files++;
-
-	files = realloc(files, num_files * sizeof(struct simple_file *));
-	files[num_files - 1] = create_file_struct(path, mode, 1, "", 0);
-
+	add_file(create_file_struct(path, mode, 1, "", 0));
 	return 0;
 }
 
@@ -201,6 +250,7 @@ static struct fuse_operations hello_oper = {
 	.chown		= hello_chown,
 	.truncate	= hello_truncate,
 	.create		= hello_create,
+	.unlink		= hello_unlink,
 };
 
 int main(int argc, char *argv[])

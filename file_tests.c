@@ -111,11 +111,27 @@ static char *test_create_new_file()
 	return 0;
 }	
 
+static char *test_delete_file()
+{
+	const char *filename1 = "testdir/random_file1";
+	const char *filename2 = "testdir/random_file2";
+	const char *filename3 = "testdir/random_file3";
+	overwrite_file(filename1, "");
+	overwrite_file(filename2, "");
+	overwrite_file(filename3, "");
+	mu_assert("test_delete_file: error deleting file", remove(filename1) == 0);
+	mu_assert("test_delete_file: error deleting file", remove(filename2) == 0);
+	mu_assert("test_delete_file: error deleting file", remove(filename3) == 0);
+
+	return 0;
+}
+
 static char * all_tests() {
 	mu_run_test(test_overwrite);
 	mu_run_test(test_append);
 	mu_run_test(test_delete_contents);
 	mu_run_test(test_create_new_file);
+	mu_run_test(test_delete_file);
 	return 0;
 }
 
