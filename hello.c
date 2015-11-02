@@ -146,31 +146,29 @@ static int hello_write(const char *path, const char *buf, size_t size, off_t
 
 	struct simple_file *f = find_file(path);
 
-	if (f) {
-		/* larger, so realloc */
-		if ((size + offset) > f->file_length) {
-			f->file_contents = realloc(f->file_contents, size +
-					offset);
-			f->file_length = size + offset;
-		/* smaller, so realloc */
-		} else if ((size + offset) < f->file_length) {
-			f->file_contents = realloc(f->file_contents, size +
-					offset);
-			f->file_length = size + offset;
-		}
+	if (f == NULL)
+		return -ENOENT;
 
-		len = f->file_length;
-		if (offset < (off_t) len) {
-			if (offset + size > len)
-				size = len - offset;
-			memcpy(f->file_contents + offset, buf, size);
-		} else
-			size = 0;
-
-		return size;
+	/* larger, so realloc */
+	if ((size + offset) > f->file_length) {
+		f->file_contents = realloc(f->file_contents, size + offset);
+		f->file_length = size + offset;
+	/* smaller, so realloc */
+	} else if ((size + offset) < f->file_length) {
+		f->file_contents = realloc(f->file_contents, size + offset);
+		f->file_length = size + offset;
 	}
 
-	return -ENOENT;
+	len = f->file_length;
+	if (offset < (off_t) len) {
+		if (offset + size > len)
+			size = len - offset;
+		memcpy(f->file_contents + offset, buf, size);
+	} else
+		size = 0;
+
+	return size;
+
 }
 
 /* Empty implementations for utime, chown, chmod and truncate so that I can have
