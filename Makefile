@@ -9,5 +9,10 @@ hello.o: hello.c simple_file.h
 simple_file.o: simple_file.c simple_file.h
 	gcc $(CFLAGS) -c simple_file.c
 
-tests:
-	gcc $(CFLAGS) file_tests.c -o file_tests
+tests: file_tests
+
+file_tests: file_tests.o
+	gcc $(CFLAGS) -o file_tests file_tests.o
+
+file_tests.o: file_tests.c
+	gcc $(CFLAGS) -c file_tests.c
