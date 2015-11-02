@@ -9,16 +9,15 @@
 #include "simple_file.h"
 
 
-static int num_files = 0;
+static int num_files; /* statics are already initialised to 0 */
 static struct simple_file **files;
 
 /* May return NULL */
 struct simple_file *find_file(const char *path)
 {
 	for (int i = 0; i < num_files; i++) {
-		if (strcmp(path, files[i]->path) == 0) {
+		if (strcmp(path, files[i]->path) == 0)
 			return files[i];
-		}
 	}
 	return NULL;
 }
@@ -36,10 +35,10 @@ int remove_file(const char *path)
 {
 	/* Get index for file */
 	int index = -1;
+
 	for (int i = 0; i < num_files; i++) {
-		if (strcmp(path, files[i]->path) == 0) {
+		if (strcmp(path, files[i]->path) == 0)
 			index = i;
-		}
 	}
 
 	/* file not found */
@@ -48,14 +47,14 @@ int remove_file(const char *path)
 
 	/* free the memory */
 	struct simple_file *to_delete = files[index];
+
 	free_file(to_delete);
 
 	/* shift over all the files in the array */
 	if (index == num_files - 1) {
 	} else if (index >= 0) {
-		for (int i = index; i < num_files - 1; i++) {
+		for (int i = index; i < num_files - 1; i++)
 			files[i] = files[i + 1];
-		}
 	}
 
 	/* reallocate memory */
@@ -77,6 +76,7 @@ static int hello_getattr(const char *path, struct stat *stbuf)
 	}
 
 	struct simple_file *f = find_file(path);
+
 	if (f == NULL)
 		return -ENOENT; /* cant find file */
 	stbuf->st_mode = f->mode;
@@ -96,9 +96,8 @@ static int hello_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
 
 	filler(buf, ".", NULL, 0);
 	filler(buf, "..", NULL, 0);
-	for (int i = 0; i < num_files; i++) {
+	for (int i = 0; i < num_files; i++)
 		filler(buf, files[i]->path + 1, NULL, 0);
-	}
 
 	return 0;
 }
@@ -121,6 +120,7 @@ static int hello_read(const char *path, char *buf, size_t size, off_t offset,
 	(void) fi;
 
 	struct simple_file *f = find_file(path);
+
 	if (f) {
 		len = f->file_length;
 		if (offset < (off_t) len) {
@@ -137,20 +137,25 @@ static int hello_read(const char *path, char *buf, size_t size, off_t offset,
 
 }
 
-static int hello_write(const char *path, const char *buf, size_t size, off_t offset,
-		struct fuse_file_info *fi)
+static int hello_write(const char *path, const char *buf, size_t size, off_t
+		offset, struct fuse_file_info *fi)
 {
 	size_t len;
 	(void) fi;
 
 
 	struct simple_file *f = find_file(path);
+
 	if (f) {
-		if ((size + offset) > f->file_length) { /* larger, so realloc */
-			f->file_contents = realloc(f->file_contents, size + offset);
+		/* larger, so realloc */
+		if ((size + offset) > f->file_length) {
+			f->file_contents = realloc(f->file_contents, size +
+					offset);
 			f->file_length = size + offset;
-		} else if ((size + offset) < f->file_length) { /* smaller, so realloc */
-			f->file_contents = realloc(f->file_contents, size + offset);
+		/* smaller, so realloc */
+		} else if ((size + offset) < f->file_length) {
+			f->file_contents = realloc(f->file_contents, size +
+					offset);
 			f->file_length = size + offset;
 		}
 
@@ -164,13 +169,14 @@ static int hello_write(const char *path, const char *buf, size_t size, off_t off
 
 		return size;
 	}
-			
+
 	return -ENOENT;
 }
 
 /* Empty implementations for utime, chown, chmod and truncate so that I can have
  * a basic implementation of the write function. Without these methods you get a
- * FUSE error SETATTR function not implemented. */
+ * FUSE error SETATTR function not implemented.
+ */
 static int hello_utime(const char *path, struct utimbuf *t)
 {
 	return 0;
@@ -187,8 +193,7 @@ static int hello_chmod(const char *path, mode_t mode)
 
 static int hello_truncate(const char *path, off_t size)
 {
-	struct simple_file *f;
-	f = find_file(path);
+	struct simple_file *f = find_file(path);
 
 	if (f == NULL)
 		return -ENOENT;
@@ -201,12 +206,13 @@ static int hello_truncate(const char *path, off_t size)
 	return 0;
 }
 
-static int hello_unlink(const char* path)
+static int hello_unlink(const char *path)
 {
 	return remove_file(path);
 }
 
-static int hello_create(const char *path, mode_t mode, struct fuse_file_info *info)
+static int hello_create(const char *path, mode_t mode, struct fuse_file_info
+		*info)
 {
 	add_file(create_file_struct(path, mode, 1, "", 0));
 	return 0;
