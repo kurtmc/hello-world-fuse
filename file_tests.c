@@ -5,13 +5,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-int tests_run = 0;
+int tests_run;
 
 void write_file(const char *filename, const char *mode, const char *contents)
 {
 	FILE *f = fopen(filename, mode);
-	if (f == NULL)
-	{
+
+	if (f == NULL) {
 		printf("Error opening file!\n");
 		exit(1);
 	}
@@ -34,29 +34,28 @@ void overwrite_file(const char *filename, const char *contents)
 char *get_file_contents(const char *filename)
 {
 	/* read the file and check if it makes sense */
-	char * buffer = 0;
+	char *buffer = 0;
 	long length;
-	FILE *f = fopen (filename, "rb");
+	FILE *f = fopen(filename, "rb");
 
-	if (f)
-	{
-		fseek (f, 0, SEEK_END);
-		length = ftell (f);
-		fseek (f, 0, SEEK_SET);
-		buffer = malloc (length);
+	if (f) {
+		fseek(f, 0, SEEK_END);
+		length = ftell(f);
+		fseek(f, 0, SEEK_SET);
+		buffer = malloc(length);
 		if (buffer)
-		{
-			fread (buffer, 1, length, f);
-		}
-		fclose (f);
+			fread(buffer, 1, length, f);
+		fclose(f);
 	}
 
 	/* buffer can be NULL */
 	return buffer;
 }
 
-static char *test_overwrite() {
+static char *test_overwrite()
+{
 	const char *filename = "testdir/file_1";
+
 	overwrite_file(filename, "X");
 
 	/* read the file and check if it makes sense */
@@ -68,8 +67,10 @@ static char *test_overwrite() {
 	return 0;
 }
 
-static char *test_append() {
+static char *test_append()
+{
 	const char *filename = "testdir/file_2";
+
 	overwrite_file(filename, "X");
 	append_file(filename, "X");
 
@@ -86,9 +87,10 @@ static char *test_append() {
 static char *test_delete_contents()
 {
 	const char *filename = "testdir/file_3";
+
 	overwrite_file(filename, "Some junk.");
 	overwrite_file(filename, "");
-	
+
 	/* read the file and check if it makes sense */
 	char *file_contents = get_file_contents(filename);
 
@@ -101,6 +103,7 @@ static char *test_delete_contents()
 static char *test_create_new_file()
 {
 	const char *filename = "testdir/random_filename";
+
 	overwrite_file(filename, "");
 
 	/* read the file and check if it makes sense */
@@ -109,13 +112,14 @@ static char *test_create_new_file()
 	mu_assert("test_create_new_file: file might not be created", file_contents != NULL);
 	mu_assert("test_create_new_file: file contents is incorrect", strcmp(file_contents, "") == 0);
 	return 0;
-}	
+}
 
 static char *test_delete_file()
 {
 	const char *filename1 = "testdir/random_file1";
 	const char *filename2 = "testdir/random_file2";
 	const char *filename3 = "testdir/random_file3";
+
 	overwrite_file(filename1, "");
 	overwrite_file(filename2, "");
 	overwrite_file(filename3, "");
@@ -126,7 +130,8 @@ static char *test_delete_file()
 	return 0;
 }
 
-static char * all_tests() {
+static char *all_tests()
+{
 	mu_run_test(test_overwrite);
 	mu_run_test(test_append);
 	mu_run_test(test_delete_contents);
@@ -136,14 +141,15 @@ static char * all_tests() {
 }
 
 
-int main(void) {
+int main(void)
+{
 	char *result = all_tests();
-	if (result != 0) {
+
+	if (result != 0)
 		printf("%s\n", result);
-	}
-	else {
+	else
 		printf("ALL TESTS PASSED\n");
-	}
+
 	printf("Tests run: %d\n", tests_run);
 
 	return result != 0;
