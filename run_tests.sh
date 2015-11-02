@@ -1,6 +1,7 @@
 #!/bin/bash
 
-fusermount -u /home/kurt/workspace/hello-world-fuse/testdir > /dev/null
+mkdir -p testdir
+fusermount -u testdir > /dev/null
 
 make
 make tests
@@ -9,4 +10,4 @@ make tests
 
 ./file_tests
 
-fusermount -u /home/kurt/workspace/hello-world-fuse/testdir > /dev/null
+fusermount -u testdir > /dev/null
