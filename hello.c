@@ -121,20 +121,18 @@ static int hello_read(const char *path, char *buf, size_t size, off_t offset,
 
 	struct simple_file *f = find_file(path);
 
-	if (f) {
-		len = f->file_length;
-		if (offset < (off_t) len) {
-			if (offset + size > len)
-				size = len - offset;
-			memcpy(buf, f->file_contents + offset, size);
-		} else
-			size = 0;
+	if (f == NULL)
+		return -ENOENT;
 
-		return size;
-	}
+	len = f->file_length;
+	if (offset < (off_t) len) {
+		if (offset + size > len)
+			size = len - offset;
+		memcpy(buf, f->file_contents + offset, size);
+	} else
+		size = 0;
 
-	return -ENOENT;
-
+	return size;
 }
 
 static int hello_write(const char *path, const char *buf, size_t size, off_t
