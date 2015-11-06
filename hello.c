@@ -184,6 +184,17 @@ static int hello_mkdir(const char* path, mode_t mode)
 	return 0;
 }
 
+static int hello_rmdir(const char* path)
+{
+
+	/* check if directory is empty first */
+	struct simple_directory *d = find_directory(root_directory, path);
+	if (d->num_files > 0 || d->num_directories > 0)
+		return -ENOTEMPTY;
+
+	return remove_directory(root_directory, path);
+}
+
 static struct fuse_operations hello_oper = {
 	.getattr  = hello_getattr,
 	.readdir  = hello_readdir,
@@ -197,6 +208,7 @@ static struct fuse_operations hello_oper = {
 	.create   = hello_create,
 	.unlink   = hello_unlink,
 	.mkdir    = hello_mkdir,
+	.rmdir    = hello_rmdir,
 };
 
 int main(int argc, char *argv[])
