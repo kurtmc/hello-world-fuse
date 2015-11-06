@@ -24,6 +24,7 @@ struct simple_file {
 struct simple_file *find_file(struct simple_directory *d, const char *path);
 struct simple_directory *create_directory(const char *path, mode_t mode);
 void add_file(struct simple_directory *d, struct simple_file *f);
+void add_dir(struct simple_directory *d, struct simple_directory *sub);
 int remove_file(struct simple_directory *d, const char *path);
 
 struct simple_file *create_file_struct(const char *path, mode_t mode, int

@@ -42,6 +42,14 @@ void add_file(struct simple_directory *d, struct simple_file *f)
 	d->files[d->num_files - 1] = f;
 }
 
+void add_dir(struct simple_directory *d, struct simple_directory *sub)
+{
+	d->num_directories++;
+
+	d->directories = realloc(d->directories, d->num_directories * sizeof(struct simple_directory *));
+	d->directories[d->num_directories - 1] = sub;
+}
+
 int remove_file(struct simple_directory *d, const char *path)
 {
 	/* Get index for file */

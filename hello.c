@@ -48,6 +48,9 @@ static int hello_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
 	filler(buf, "..", NULL, 0);
 	for (int i = 0; i < root_directory->num_files; i++)
 		filler(buf, root_directory->files[i]->path + 1, NULL, 0);
+	
+	for (int i = 0; i < root_directory->num_directories; i++)
+		filler(buf, root_directory->directories[i]->path + 1, NULL, 0);
 
 	return 0;
 }
@@ -164,6 +167,14 @@ static int hello_create(const char *path, mode_t mode, struct fuse_file_info
 	return 0;
 }
 
+static int hello_mkdir(const char* path, mode_t mode)
+{
+	struct simple_directory *d = create_directory(path, mode);
+	add_dir(root_directory, d);
+
+	return 0;
+}
+
 static struct fuse_operations hello_oper = {
 	.getattr  = hello_getattr,
 	.readdir  = hello_readdir,
@@ -176,6 +187,7 @@ static struct fuse_operations hello_oper = {
 	.truncate = hello_truncate,
 	.create   = hello_create,
 	.unlink   = hello_unlink,
+	.mkdir    = hello_mkdir,
 };
 
 int main(int argc, char *argv[])
