@@ -99,3 +99,13 @@ struct simple_file *find_file(struct simple_directory *d, const char *path)
 	}
 	return NULL;
 }
+
+/* May return NULL */
+struct simple_directory *find_directory(struct simple_directory *d, const char *path)
+{
+	for (int i = 0; i < d->num_directories; i++) {
+		if (strcmp(path, d->directories[i]->path) == 0)
+			return d->directories[i];
+	}
+	return NULL;
+}

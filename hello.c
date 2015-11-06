@@ -11,8 +11,6 @@
 
 static struct simple_directory *root_directory;
 
-/* May return NULL */
-
 static int hello_getattr(const char *path, struct stat *stbuf)
 {
 	int res = 0;
@@ -27,12 +25,23 @@ static int hello_getattr(const char *path, struct stat *stbuf)
 
 	struct simple_file *f = find_file(root_directory, path);
 
-	if (f == NULL)
-		return -ENOENT; /* cant find file */
-	stbuf->st_mode = f->mode;
-	stbuf->st_nlink = f->hard_links;
-	stbuf->st_size = f->file_length;
-	return res;
+	if (f != NULL) {
+		stbuf->st_mode = f->mode;
+		stbuf->st_nlink = f->hard_links;
+		stbuf->st_size = f->file_length;
+		return res;
+	}
+
+
+	struct simple_directory *d = find_directory(root_directory, path);
+
+	if (d != NULL) {
+		stbuf->st_mode = d->mode;
+		stbuf->st_nlink = 2;
+		return res;
+	}
+
+	return -ENOENT; /* cant find file */
 }
 
 static int hello_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
@@ -169,7 +178,7 @@ static int hello_create(const char *path, mode_t mode, struct fuse_file_info
 
 static int hello_mkdir(const char* path, mode_t mode)
 {
-	struct simple_directory *d = create_directory(path, mode);
+	struct simple_directory *d = create_directory(path, S_IFDIR | mode);
 	add_dir(root_directory, d);
 
 	return 0;
