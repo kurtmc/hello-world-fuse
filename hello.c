@@ -1,11 +1,13 @@
 #define FUSE_USE_VERSION 26
 
+
 #include <fuse.h>
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <stdlib.h>
+#include <libgen.h>
 #include "simple_file.h"
 
 
@@ -169,11 +171,46 @@ static int hello_unlink(const char *path)
 	return remove_file(root_directory, path);
 }
 
+int create_file(struct simple_directory *dir, const char *path, mode_t mode)
+{
+
+	/* implementation will be something like this, but path strings will
+	 * need to be handled better
+	 */
+	char *tmp_path = strdup(path);
+	const char *dn = dirname(tmp_path);
+
+
+	/* Debug */
+	printf("\n\n");
+	printf("create_file()\n");
+	printf("Path is: %s\n", path);
+	printf("dirname is: %s\n", dn);
+
+	if (strcmp(dn, "/") == 0) {
+		printf("Create file\n");
+		add_file(dir, create_file_struct(path, mode, 1, "", 0));
+		
+		printf("\n\n");
+
+		return 0;
+	} else {
+		printf("Find directory\n");
+		struct simple_directory *d = find_directory(dir, dn);
+
+		int dir_len = strlen(dn);
+		char *new_path = strdup(path + dir_len);
+		
+		printf("\n\n");
+
+		return create_file(d, new_path, mode);
+	}
+}
+
 static int hello_create(const char *path, mode_t mode, struct fuse_file_info
 		*info)
 {
-	add_file(root_directory, create_file_struct(path, mode, 1, "", 0));
-	return 0;
+	return create_file(root_directory, path, mode);
 }
 
 static int hello_mkdir(const char* path, mode_t mode)
